@@ -36,14 +36,15 @@ def default_players(players: list[str]) -> list[str]:
 
 
 def sheet_url() -> str:
-    url = st.secrets.get("sheet_url")
+    url = st.secrets.get("sheet_url") or st.secrets.get("connections", {}).get("gsheets", {}).get("spreadsheet")
     for path in (Path("streamlit/secrets.toml"), Path(".streamlit/secrets.toml")):
         if url or not path.exists():
             continue
         with path.open("rb") as file:
-            url = tomllib.load(file).get("sheet_url")
+            secrets = tomllib.load(file)
+            url = secrets.get("sheet_url") or secrets.get("connections", {}).get("gsheets", {}).get("spreadsheet")
     if not url:
-        st.error("Configura `sheet_url` in `streamlit/secrets.toml` o nei Secrets di Streamlit Cloud.")
+        st.error("Configura `sheet_url` o `[connections.gsheets].spreadsheet` nei secrets.")
         st.stop()
     return url
 
